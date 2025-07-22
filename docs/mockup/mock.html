@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Session - 雑談セッションアプリ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .theme-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .theme-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                opacity: 1;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+        
+        .pulse-animation {
+            position: relative;
+        }
+        
+        .pulse-animation::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            animation: pulse-ring 2s infinite;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-gray-100">
+    <div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+        <!-- TOP画面 -->
+        <div id="homeScreen" class="screen active">
+            <div class="container mx-auto px-4 py-16 max-w-4xl">
+                <div class="text-center space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+                            Chat Session
+                        </h1>
+                        <p class="text-xl text-gray-300">チームの雑談を楽しく、効率的に</p>
+                    </div>
+                    
+                    <div class="glass-morphism rounded-2xl p-8 md:p-12 space-y-6 max-w-2xl mx-auto">
+                        <h2 class="text-2xl font-semibold text-purple-300">使い方</h2>
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-sm font-semibold">1</span>
+                                <p class="text-gray-300">参加者の名前を入力します</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-sm font-semibold">2</span>
+                                <p class="text-gray-300">ファシリテーターがランダムに選ばれます</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-sm font-semibold">3</span>
+                                <p class="text-gray-300">トークテーマを選択します</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-sm font-semibold">4</span>
+                                <p class="text-gray-300">時間を設定してセッションを開始！</p>
+                            </div>
+                        </div>
+                        
+                        <button onclick="showScreen('participantsScreen')" class="w-full md:w-auto px-8 py-4 gradient-bg text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+                            はじめる
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参加者入力画面 -->
+        <div id="participantsScreen" class="screen">
+            <div class="container mx-auto px-4 py-16 max-w-2xl">
+                <div class="space-y-8">
+                    <div class="text-center">
+                        <h2 class="text-3xl font-bold text-purple-300">参加者を入力</h2>
+                        <p class="text-gray-400 mt-2">セッションに参加するメンバーを追加してください</p>
+                    </div>
+                    
+                    <div class="glass-morphism rounded-2xl p-6 md:p-8 space-y-6">
+                        <div class="space-y-4" id="participantsList">
+                            <div class="participant-input flex items-center space-x-2">
+                                <input type="text" placeholder="参加者名" class="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors">
+                                <button onclick="removeParticipant(this)" class="p-3 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button onclick="addParticipant()" class="w-full py-3 border-2 border-dashed border-gray-600 hover:border-purple-500 rounded-lg text-gray-400 hover:text-purple-400 transition-colors">
+                            + 参加者を追加
+                        </button>
+                        
+                        <div class="flex space-x-3">
+                            <button onclick="showScreen('homeScreen')" class="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
+                                戻る
+                            </button>
+                            <button onclick="startSession()" class="flex-1 px-6 py-3 gradient-bg text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+                                次へ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- セッション画面 -->
+        <div id="sessionScreen" class="screen">
+            <div class="container mx-auto px-4 py-8 max-w-6xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- 左側：ファシリテーター -->
+                    <div class="lg:col-span-1">
+                        <div class="glass-morphism rounded-2xl p-6 text-center space-y-4">
+                            <h3 class="text-xl font-semibold text-purple-300">ファシリテーター</h3>
+                            <div class="relative inline-block">
+                                <div class="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                    <span id="facilitatorIcon" class="text-4xl font-bold text-white"></span>
+                                </div>
+                                <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span class="text-lg">👑</span>
+                                </div>
+                            </div>
+                            <p id="facilitatorName" class="text-2xl font-semibold"></p>
+                        </div>
+                    </div>
+
+                    <!-- 右側：メインコンテンツ -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- トークテーマ -->
+                        <div class="glass-morphism rounded-2xl p-6">
+                            <h3 class="text-xl font-semibold text-purple-300 mb-4">トークテーマを選択</h3>
+                            <div id="topicsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- トピックがここに動的に生成されます -->
+                            </div>
+                        </div>
+
+                        <!-- タイマー -->
+                        <div class="glass-morphism rounded-2xl p-6 text-center space-y-6">
+                            <div class="flex items-center justify-center space-x-4 mb-4">
+                                <label class="text-gray-300">時間設定：</label>
+                                <select id="timeSelect" class="px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500">
+                                    <option value="3">3分</option>
+                                    <option value="5" selected>5分</option>
+                                    <option value="10">10分</option>
+                                    <option value="15">15分</option>
+                                    <option value="20">20分</option>
+                                    <option value="30">30分</option>
+                                </select>
+                            </div>
+                            
+                            <div id="timerDisplay" class="text-6xl md:text-8xl font-bold tabular-nums bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+                                00:00
+                            </div>
+                            
+                            <div class="flex space-x-3 justify-center">
+                                <button id="timerButton" onclick="toggleTimer()" class="px-8 py-3 gradient-bg text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 flex items-center space-x-2">
+                                    <span>開始</span>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="newSession()" class="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
+                                    新しいセッション
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // アプリケーションの状態管理
+        const app = {
+            participants: [],
+            facilitator: null,
+            selectedTopic: null,
+            timer: null,
+            timeRemaining: 0,
+            isTimerRunning: false
+        };
+
+        // トークテーマのリスト（ITエンジニア向け）
+        const topicTemplates = [
+            "最近学んだ技術やツール",
+            "開発で苦労したバグの話",
+            "おすすめのVSCode拡張機能",
+            "好きなプログラミング言語とその理由",
+            "キーボードやマウスのこだわり",
+            "リモートワークの工夫",
+            "コードレビューで気をつけていること",
+            "最近読んだ技術書",
+            "AIツールの活用方法",
+            "副業やOSSの話",
+            "テストコードの書き方",
+            "アーキテクチャの設計思想",
+            "チーム開発のTips",
+            "デバッグの極意",
+            "パフォーマンス改善の経験"
+        ];
+
+        // 画面切り替え
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // 参加者の追加
+        function addParticipant() {
+            const participantsList = document.getElementById('participantsList');
+            const newInput = document.createElement('div');
+            newInput.className = 'participant-input flex items-center space-x-2';
+            newInput.innerHTML = `
+                <input type="text" placeholder="参加者名" class="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors">
+                <button onclick="removeParticipant(this)" class="p-3 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            participantsList.appendChild(newInput);
+            newInput.querySelector('input').focus();
+        }
+
+        // 参加者の削除
+        function removeParticipant(button) {
+            const inputs = document.querySelectorAll('.participant-input');
+            if (inputs.length > 1) {
+                button.closest('.participant-input').remove();
+            }
+        }
+
+        // セッション開始
+        function startSession() {
+            const inputs = document.querySelectorAll('.participant-input input');
+            app.participants = [];
+            
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    app.participants.push(input.value.trim());
+                }
+            });
+
+            if (app.participants.length < 2) {
+                alert('参加者を2名以上入力してください');
+                return;
+            }
+
+            // ファシリテーターをランダムに選択
+            const randomIndex = Math.floor(Math.random() * app.participants.length);
+            app.facilitator = app.participants[randomIndex];
+
+            // ファシリテーター情報を表示
+            document.getElementById('facilitatorName').textContent = app.facilitator;
+            document.getElementById('facilitatorIcon').textContent = app.facilitator.charAt(0).toUpperCase();
+
+            // トピックを生成
+            generateTopics();
+
+            // セッション画面へ移動
+            showScreen('sessionScreen');
+        }
+
+        // トピックの生成
+        function generateTopics() {
+            const topicsList = document.getElementById('topicsList');
+            topicsList.innerHTML = '';
+            
+            // ランダムに3つのトピックを選択
+            const shuffled = [...topicTemplates].sort(() => 0.5 - Math.random());
+            const selectedTopics = shuffled.slice(0, 3);
+
+            selectedTopics.forEach((topic, index) => {
+                const topicCard = document.createElement('div');
+                topicCard.className = 'theme-card p-4 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer hover:border-purple-500';
+                topicCard.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-3xl mb-2">${['💡', '🚀', '⚡'][index]}</div>
+                        <p class="text-sm">${topic}</p>
+                    </div>
+                `;
+                topicCard.onclick = () => selectTopic(topicCard, topic);
+                topicsList.appendChild(topicCard);
+            });
+        }
+
+        // トピックの選択
+        function selectTopic(card, topic) {
+            document.querySelectorAll('.theme-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+            card.classList.add('selected');
+            app.selectedTopic = topic;
+        }
+
+        // タイマーの切り替え
+        function toggleTimer() {
+            if (!app.selectedTopic) {
+                alert('トークテーマを選択してください');
+                return;
+            }
+
+            if (app.isTimerRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        // タイマー開始
+        function startTimer() {
+            const minutes = parseInt(document.getElementById('timeSelect').value);
+            app.timeRemaining = minutes * 60;
+            app.isTimerRunning = true;
+
+            const button = document.getElementById('timerButton');
+            button.innerHTML = `
+                <span>停止</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"></path>
+                </svg>
+            `;
+            button.classList.add('pulse-animation');
+
+            updateTimerDisplay();
+            app.timer = setInterval(() => {
+                app.timeRemaining--;
+                updateTimerDisplay();
+
+                if (app.timeRemaining <= 0) {
+                    stopTimer();
+                    alert('時間になりました！お疲れさまでした！');
+                }
+            }, 1000);
+        }
+
+        // タイマー停止
+        function stopTimer() {
+            clearInterval(app.timer);
+            app.isTimerRunning = false;
+
+            const button = document.getElementById('timerButton');
+            button.innerHTML = `
+                <span>開始</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            `;
+            button.classList.remove('pulse-animation');
+        }
+
+        // タイマー表示の更新
+        function updateTimerDisplay() {
+            const minutes = Math.floor(app.timeRemaining / 60);
+            const seconds = app.timeRemaining % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timerDisplay').textContent = display;
+        }
+
+        // 新しいセッション
+        function newSession() {
+            if (app.isTimerRunning) {
+                stopTimer();
+            }
+            app.selectedTopic = null;
+            document.getElementById('timerDisplay').textContent = '00:00';
+            showScreen('participantsScreen');
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enterキーで参加者を追加
+            document.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.target.classList.contains('participant-input')) {
+                    addParticipant();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
