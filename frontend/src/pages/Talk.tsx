@@ -1,14 +1,21 @@
-import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function Talk() {
-
-  const location = useLocation();
-
-//const facilitator = location.state.facilitator as string;
-  const facilitator = "SampleUser"; // Mock
-//const selectedTopics = location.state.selectedTopics as string[];
+  const [facilitator, setFacilitator] = useState<string>("");
   const selectedTopics = ["Topic1", "Topic2", "Topic3"]; // Mock
   const timeSelectList = [3, 5, 10, 15, 20, 30];
+
+  // コンポーネントのマウント時にファシリテーターを選択
+  useEffect(() => {
+    // LocalStorageから参加者リストを取得
+    const savedParticipants = localStorage.getItem('participants');
+    if (savedParticipants) {
+      const participants = JSON.parse(savedParticipants) as string[];
+      // ランダムに1人選択
+      const randomIndex = Math.floor(Math.random() * participants.length);
+      setFacilitator(participants[randomIndex]);
+    }
+  }, []); // 空の依存配列で初回のみ実行
 
   return (
     <div id="sessionScreen" className="screen active">
@@ -20,13 +27,17 @@ export default function Talk() {
               <h3 className="text-xl font-semibold text-purple-300">ファシリテーター</h3>
               <div className="relative inline-block">
                 <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <span id="facilitatorIcon" className="text-4xl font-bold text-white">{facilitator.charAt(0).toUpperCase()}</span>
+                  <span id="facilitatorIcon" className="text-4xl font-bold text-white">
+                    {facilitator ? facilitator.charAt(0).toUpperCase() : '?'}
+                  </span>
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
                   <span className="text-lg">👑</span>
                 </div>
               </div>
-              <p id="facilitatorName" className="text-2xl font-semibold">{facilitator}</p>
+              <p id="facilitatorName" className="text-2xl font-semibold">
+                {facilitator || 'ランダム選択中...'}
+              </p>
 
             </div>
           </div>
