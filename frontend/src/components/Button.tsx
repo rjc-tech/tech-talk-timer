@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Button({
   path,
@@ -8,9 +8,15 @@ export default function Button({
   path: string;
   children: ReactNode;
 }) {
+
+  const navigate = useNavigate();
+
   return (
-    <Link to={path} className="w-full md:w-auto px-8 py-4 gradient-bg text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+    <button
+      onClick={() => navigate(path)}
+      className="w-full md:w-auto px-8 py-4 gradient-bg text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
+    >
       {children}
-    </Link>
+    </button>
   );
 }
