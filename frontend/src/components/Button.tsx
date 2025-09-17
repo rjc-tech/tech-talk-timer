@@ -15,10 +15,6 @@ export default function Button({
 
   const navigate = useNavigate();
 
-  // Mock
-  facilitator = "SampleUser";
-  selectedTopics = ["Topic1", "Topic2", "Topic3"];
-
   return (
     <button
       onClick={() => navigate(path, {state: {

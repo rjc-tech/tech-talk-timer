@@ -4,8 +4,10 @@ export default function Talk() {
 
   const location = useLocation();
 
-  const facilitator = location.state.facilitator as string;
-  const selectedTopics = location.state.selectedTopics as string[];
+//const facilitator = location.state.facilitator as string;
+  const facilitator = "SampleUser"; // Mock
+//const selectedTopics = location.state.selectedTopics as string[];
+  const selectedTopics = ["Topic1", "Topic2", "Topic3"]; // Mock
   const timeSelectList = [3, 5, 10, 15, 20, 30];
 
   return (
