@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Talk() {
   const [facilitator, setFacilitator] = useState<string>("");
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [topics, setTopics] = useState<string[]>([]);
   const timeSelectList = [3, 5, 10, 15, 20, 30];
+  const navigate = useNavigate();
 
   // コンポーネントのマウント時にファシリテーターとトピックリストを選択
   useEffect(() => {
@@ -112,7 +114,7 @@ export default function Talk() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                 </button>
-                <button onClick={() => {/* newSession() */}} className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
+                <button onClick={() => navigate("/participant")} className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
                   新しいセッション
                 </button>
               </div>
