@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 
 export default function Talk() {
   const [facilitator, setFacilitator] = useState<string>("");
-  const selectedTopics = ["Topic1", "Topic2", "Topic3"]; // Mock
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [topics, setTopics] = useState<string[]>([]);
   const timeSelectList = [3, 5, 10, 15, 20, 30];
 
-  // コンポーネントのマウント時にファシリテーターを選択
+  // コンポーネントのマウント時にファシリテーターとトピックリストを選択
   useEffect(() => {
     // LocalStorageから参加者リストを取得
     const savedParticipants = localStorage.getItem('participants');
@@ -15,6 +16,30 @@ export default function Talk() {
       const randomIndex = Math.floor(Math.random() * participants.length);
       setFacilitator(participants[randomIndex]);
     }
+
+    // APIからトピックリストを取得
+    const mockTopics = [
+      "最近学んだ技術やツール",
+      "開発で苦労したバグの話",
+      "おすすめのVSCode拡張機能",
+      "好きなプログラミング言語とその理由",
+      "キーボードやマウスのこだわり",
+      "リモートワークの工夫",
+      "コードレビューで気をつけていること",
+      "最近読んだ技術書",
+      "AIツールの活用方法",
+      "副業やOSSの話",
+      "テストコードの書き方",
+      "アーキテクチャの設計思想",
+      "チーム開発のTips",
+      "デバッグの極意",
+      "パフォーマンス改善の経験"
+    ]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
+
+    setTopics(mockTopics);
+
   }, []); // 空の依存配列で初回のみ実行
 
   return (
@@ -49,8 +74,11 @@ export default function Talk() {
               <h3 className="text-xl font-semibold text-purple-300 mb-4">トークテーマを選択</h3>
               <div id="topicsList" className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {
-                  selectedTopics.map((topic, index) => (
-                    <div key={index} onClick={console.log} className="text-center">
+                  topics.map((topic, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedTopic(topic)}
+                      className={`text-center theme-card p-4 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer hover:border-purple-500 ${selectedTopic === topic ? "selected" : ""}`}>
                         <div className="text-3xl mb-2">{['💡', '🚀', '⚡'][index]}</div>
                         <p className="text-sm">{topic}</p>
                     </div>
