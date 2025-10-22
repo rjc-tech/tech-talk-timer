@@ -6,7 +6,7 @@
 export const BASE_URL = "http://localhost:8080";
 
 // リクエストパス
-export const TOPICS_PATH = "/" /* "/api/themes/randoms" */ ;
+export const TOPICS_PATH = "/api/themes/randoms";
 
 // テーマの型
 export type Theme = {

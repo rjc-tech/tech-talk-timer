@@ -1,8 +1,14 @@
 import { TimerSection } from "@/components/TimerSection";
-import { BASE_URL, Theme, TOPICS, TOPICS_PATH } from "@/constants/api";
+import { BASE_URL, TOPICS, TOPICS_PATH } from "@/constants/api";
 import { DEFAULT_TIMER_DURATION } from "@/constants/timer";
 import axios from "axios";
 import { useEffect, useState } from "react";
+
+// APIレスポンスの型定義
+type ThemeResponse = {
+  themes: string[];
+  count: number;
+};
 
 export default function Talk() {
   const [facilitator, setFacilitator] = useState<string>("");
@@ -25,16 +31,15 @@ export default function Talk() {
 
       // APIからトピックリストを取得
       try {
-
-        const response = await axios.get(`${BASE_URL}${TOPICS_PATH}`);
-        const themes = response.data as Theme[];
-
-        // Mock
-        console.log("response: ", response);
-        const mockTopics = TOPICS.sort(() => 0.5 - Math.random()).slice(0, 3);
-        setTopics(mockTopics);
-
-        // setTopics(themes.map(item => item.theme));
+        const response = await axios.get<ThemeResponse>(`${BASE_URL}${TOPICS_PATH}`);
+        // APIから取得したテーマを設定
+        if (response.data.themes && response.data.themes.length > 0) {
+          setTopics(response.data.themes);
+        } else {
+          // テーマが空の場合はフォールバック
+          const mockTopics = TOPICS.sort(() => 0.5 - Math.random()).slice(0, 3);
+          setTopics(mockTopics);
+        }
 
       } catch (error) {
         // API取得失敗時はモックデータをフォールバックとして使用
