@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
 import { TimerSection } from "@/components/TimerSection";
+import { BASE_URL, Theme, TOPICS, TOPICS_PATH } from "@/constants/api";
 import { DEFAULT_TIMER_DURATION } from "@/constants/timer";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export default function Talk() {
   const [facilitator, setFacilitator] = useState<string>("");
@@ -9,37 +11,40 @@ export default function Talk() {
 
   // コンポーネントのマウント時にファシリテーターとトピックリストを選択
   useEffect(() => {
-    // LocalStorageから参加者リストを取得
-    const savedParticipants = localStorage.getItem('participants');
-    if (savedParticipants) {
-      const participants = JSON.parse(savedParticipants) as string[];
-      // ランダムに1人選択
-      const randomIndex = Math.floor(Math.random() * participants.length);
-      setFacilitator(participants[randomIndex]);
-    }
 
-    // APIからトピックリストを取得
-    const mockTopics = [
-      "最近学んだ技術やツール",
-      "開発で苦労したバグの話",
-      "おすすめのVSCode拡張機能",
-      "好きなプログラミング言語とその理由",
-      "キーボードやマウスのこだわり",
-      "リモートワークの工夫",
-      "コードレビューで気をつけていること",
-      "最近読んだ技術書",
-      "AIツールの活用方法",
-      "副業やOSSの話",
-      "テストコードの書き方",
-      "アーキテクチャの設計思想",
-      "チーム開発のTips",
-      "デバッグの極意",
-      "パフォーマンス改善の経験"
-    ]
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 3);
+    const fetchInitialData = async () => {
 
-    setTopics(mockTopics);
+      // LocalStorageから参加者リストを取得
+      const savedParticipants = localStorage.getItem('participants');
+      if (savedParticipants) {
+        const participants = JSON.parse(savedParticipants) as string[];
+        // ランダムに1人選択
+        const randomIndex = Math.floor(Math.random() * participants.length);
+        setFacilitator(participants[randomIndex]);
+      }
+
+      // APIからトピックリストを取得
+      try {
+
+        const response = await axios.get(`${BASE_URL}${TOPICS_PATH}`);
+        const themes = response.data as Theme[];
+
+        // Mock
+        console.log("response: ", topics);
+        const mockTopics = TOPICS.sort(() => 0.5 - Math.random()).slice(0, 3);
+        setTopics(mockTopics);
+
+        // setTopics(themes.map(item => item.theme));
+
+      } catch (error) {
+        // API取得失敗時はモックデータをフォールバックとして使用
+        console.error("トピックの取得に失敗しました。モックデータを使用します。", error);
+        const mockTopics = TOPICS.sort(() => 0.5 - Math.random()).slice(0, 3);
+        setTopics(mockTopics);
+      }
+    };
+
+    fetchInitialData();
 
   }, []); // 空の依存配列で初回のみ実行
 
