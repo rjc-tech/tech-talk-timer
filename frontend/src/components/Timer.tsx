@@ -50,9 +50,6 @@ export const Timer: React.FC<TimerProps> = ({
       timer = setInterval(() => {
         setTimeLeft(prev => {
           const newValue = prev <= 1 ? 0 : prev - 1;
-          if (newValue === 0) {
-            onComplete?.();
-          }
           onTimeUpdate?.(newValue);
           return newValue;
         });
@@ -64,7 +61,14 @@ export const Timer: React.FC<TimerProps> = ({
         clearInterval(timer);
       }
     };
-  }, [isRunning, timeLeft, onComplete, onTimeUpdate]);
+  }, [isRunning, timeLeft, onTimeUpdate]);
+
+  // タイマー完了時の処理（別のuseEffectで分離）
+  useEffect(() => {
+    if (timeLeft === 0 && isRunning) {
+      onComplete?.();
+    }
+  }, [timeLeft, isRunning, onComplete]);
 
   // 時間を「MM:SS」形式でフォーマット
   const formatTime = (seconds: number): string => {
