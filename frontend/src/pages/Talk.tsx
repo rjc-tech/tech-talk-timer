@@ -30,7 +30,7 @@ export default function Talk() {
         const themes = response.data as Theme[];
 
         // Mock
-        console.log("response: ", topics);
+        console.log("response: ", response);
         const mockTopics = TOPICS.sort(() => 0.5 - Math.random()).slice(0, 3);
         setTopics(mockTopics);
 
